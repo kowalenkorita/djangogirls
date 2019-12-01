@@ -1,6 +1,9 @@
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class Post(models.Model):
@@ -20,8 +23,10 @@ class Post(models.Model):
     def approved_comments(self):
         return self.comments.filter(approved_comment=True)
 
+
 class Comment(models.Model):
     post = models.ForeignKey('blog.Post', on_delete=models.CASCADE, related_name='comments')
+    # author = models.ForeignKey('blog.Author', on_delete=models.CASCADE)
     author = models.CharField(max_length=200)
     text = models.TextField()
     created_date = models.DateTimeField(default=timezone.now)
@@ -34,3 +39,12 @@ class Comment(models.Model):
     def __str__(self):
         return self.text
 
+class Follower(models.Model):
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='follower')
+    follower = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='author')
+    # author_follower = models.ManyToManyField(Post)
+
+
+# class Author(models.Model):
+#     name_author = models.ForeignKey('blog.Post', on_delete=models.CASCADE, related_name='posts')
+#     author_birth = models.CharField(max_length=200)

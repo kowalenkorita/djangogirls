@@ -1,19 +1,32 @@
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
-from .models import Post, Comment
+from .models import Post, Comment, Follower, User
 from .forms import PostForm, CommentForm
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
+# from django.contrib import auth
+from django.contrib.auth.models import User
+from django.http import JsonResponse
+
 
 
 def post_list(request):
     posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')
     return render(request, 'blog/post_list.html', {'posts': posts})
 
-
 def post_detail(request, pk):
     post = get_object_or_404(Post, pk=pk)
     return render(request, 'blog/post_detail.html', {'post': post})
+
+# def add_follower(request):
+#     p = Followers(author=request.user.author_id, follower=request.user.id)
+#     p.save()
+#     return render(request, 'blog/post_list.html', {'post': post})
+
+def follow(request, pk): 
+    author = get_object_or_404(User, pk=pk)
+    Follower.objects.get_or_create(author=author, follower=request.user)
+    return JsonResponse({})
 
 @login_required
 def post_new(request):
@@ -85,3 +98,4 @@ def comment_remove(request, pk):
     comment = get_object_or_404(Comment, pk=pk)
     comment.delete()
     return redirect('post_detail', pk=comment.post.pk)
+
